@@ -54,7 +54,10 @@ public class AuthImplementation extends SirupAuthGrpc.SirupAuthImplBase {
             boolean isValid = auth.auth(token);
             authResponseBuilder.setTokenValid(isValid);
         } catch (IllegalArgumentException iae) {
-            authResponseBuilder.setTokenValid(false);
+            authResponseBuilder.setTokenValid(false)
+                    .setError(ErrorRpc.newBuilder()
+                            .setStatus(0)
+                            .setErrorMessage("Invalid Token!"));
         }
         responseObserver.onNext(authResponseBuilder.build());
         responseObserver.onCompleted();
