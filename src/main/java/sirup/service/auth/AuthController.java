@@ -53,7 +53,7 @@ public class AuthController {
         AuthResponse authResponse;
         try {
             Optional<Token> optionalToken = Token.fromTokenString(authRequest.token);
-            boolean isAuth = optionalToken.isPresent() && auth.auth(optionalToken.get());
+            boolean isAuth = optionalToken.isPresent() && auth.auth(optionalToken.get(), authRequest.userID());
             int code = isAuth ? HttpStatus.OK_200 : HttpStatus.BAD_REQUEST_400;
             authResponse = new AuthResponse(code,
                     new HashMap<>(){{
@@ -71,6 +71,6 @@ public class AuthController {
         response.body(gson.toJson(authResponse));
         return response.body();
     }
-    private static record AuthRequest(String token){}
+    private static record AuthRequest(String token, String userID){}
     private static record AuthResponse(int status, Map<String,Object> body){}
 }

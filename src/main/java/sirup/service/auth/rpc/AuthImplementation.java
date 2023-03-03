@@ -51,7 +51,7 @@ public class AuthImplementation extends SirupAuthGrpc.SirupAuthImplBase {
         boolean isValid = false;
         try {
             Optional<Token> optionalToken = Token.fromTokenString(request.getToken());
-            isValid = optionalToken.isPresent() && auth.auth(optionalToken.get());
+            isValid = optionalToken.isPresent() && auth.auth(optionalToken.get(), request.getCredentialsRpc().getUserID());
         } catch (IllegalArgumentException iae) {
             iae.printStackTrace();
         }

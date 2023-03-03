@@ -68,7 +68,7 @@
         <dependency>
             <groupId>sirup.service.auth.rpc.proto</groupId>
             <artifactId>auth-rpc</artifactId>
-            <version>1.0.2</version>
+            <version>1.0.3</version>
         </dependency>
 
         <dependency>

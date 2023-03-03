@@ -101,11 +101,11 @@ public class Token {
      * Check if the given token is still valid
      * @return true if the token is valid, otherwise false
      */
-    public boolean isValid() {
+    public boolean isValid(String userID) {
         try {
             String[] split = crypt.decode(this.value).split(":");
             String key = split[split.length - 1];
-            return this.createdDate.before(this.expireDate) && key.equals(Env.PRIVATE_KEY);
+            return this.createdDate.before(this.expireDate) && key.equals(Env.PRIVATE_KEY) && this.credentials.userID().equals(userID);
         } catch (IllegalBlockSizeException | BadPaddingException e) {
             e.printStackTrace();
         }
