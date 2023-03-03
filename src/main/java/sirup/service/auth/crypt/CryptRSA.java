@@ -43,14 +43,7 @@ public class CryptRSA implements ICrypt {
     }
 
     @Override
-    public String decode(String encryptedText) {
-        String decodedText;
-        try {
-            decodedText = new String(decryptCipher.doFinal(Base64.getDecoder().decode(encryptedText.getBytes(StandardCharsets.UTF_8))));;
-        } catch (BadPaddingException | IllegalBlockSizeException bpe) {
-            decodedText = "ERROR";
-            bpe.printStackTrace();
-        }
-        return decodedText;
+    public String decode(String encryptedText) throws IllegalBlockSizeException, BadPaddingException {
+        return new String(decryptCipher.doFinal(Base64.getDecoder().decode(encryptedText.getBytes(StandardCharsets.UTF_8))));
     }
 }

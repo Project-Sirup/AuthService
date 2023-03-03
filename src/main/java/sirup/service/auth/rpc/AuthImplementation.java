@@ -12,6 +12,7 @@ import sirup.service.auth.rpc.proto.*;
 import javax.crypto.NoSuchPaddingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 public class AuthImplementation extends SirupAuthGrpc.SirupAuthImplBase {
@@ -34,9 +35,7 @@ public class AuthImplementation extends SirupAuthGrpc.SirupAuthImplBase {
     public void token(TokenRequest request, StreamObserver<TokenResponse> responseObserver) {
         logger.info("getToken");
         Credentials credentials = new Credentials(
-                request.getCredentials().getUsername(),
-                request.getCredentials().getPassword(),
-                "");
+                request.getCredentials().getUserID());
         Token token = auth.getToken(credentials);
         TokenResponse tokenResponse = TokenResponse.newBuilder()
                 .setToken(token.toTokenString())
@@ -47,15 +46,17 @@ public class AuthImplementation extends SirupAuthGrpc.SirupAuthImplBase {
 
     @Override
     public void auth(AuthRequest request, StreamObserver<AuthResponse> responseObserver) {
-        logger.info("auth");
+        logger.info("auth...");
         AuthResponse.Builder authResponseBuilder = AuthResponse.newBuilder();
+        boolean isValid = false;
         try {
-            Token token = Token.fromTokenString(request.getToken());
-            boolean isValid = auth.auth(token);
-            authResponseBuilder.setTokenValid(isValid);
+            Optional<Token> optionalToken = Token.fromTokenString(request.getToken());
+            isValid = optionalToken.isPresent() && auth.auth(optionalToken.get());
         } catch (IllegalArgumentException iae) {
-            authResponseBuilder.setTokenValid(false);
+            iae.printStackTrace();
         }
+        authResponseBuilder.setTokenValid(isValid);
+        logger.info("...success:[" + isValid + "]");
         responseObserver.onNext(authResponseBuilder.build());
         responseObserver.onCompleted();
     }

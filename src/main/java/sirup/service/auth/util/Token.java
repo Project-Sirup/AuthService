@@ -3,9 +3,12 @@ package sirup.service.auth.util;
 import sirup.service.auth.crypt.CryptB64;
 import sirup.service.auth.crypt.ICrypt;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Optional;
 
 public class Token {
     private final String value;
@@ -61,16 +64,21 @@ public class Token {
      * @param tokenString the string version of a Token
      * @return new Token
      */
-    public static Token fromTokenString(String tokenString) {
+    public static Optional<Token> fromTokenString(String tokenString) {
         if (tokenString.equals("")) {
             throw new IllegalArgumentException("tokenString must not be empty!");
         }
-        String decodedTokenString = crypt.decode(tokenString);
-        String[] strings = decodedTokenString.split(":");
-        Credentials credentials = new Credentials(strings[0],strings[1],strings[2]);
-        Date created = new Date(Long.parseLong(strings[strings.length - 3]));
-        Date expire = new Date(Long.parseLong(strings[strings.length - 2]));
-        return new Token(tokenString,created,expire,credentials);
+        try {
+            String decodedTokenString = crypt.decode(tokenString);
+            String[] strings = decodedTokenString.split(":");
+            Credentials credentials = new Credentials(strings[0]);
+            Date created = new Date(Long.parseLong(strings[strings.length - 3]));
+            Date expire = new Date(Long.parseLong(strings[strings.length - 2]));
+            return Optional.of(new Token(tokenString,created,expire,credentials));
+        } catch (IllegalBlockSizeException | BadPaddingException e) {
+            System.err.println(e.getMessage());
+        }
+        return Optional.empty();
     }
 
     /**
@@ -82,9 +90,7 @@ public class Token {
     }
 
     private String genValue(Credentials credentials) {
-        String plainText =  credentials.username() + ":" +
-                            credentials.password() + ":" +
-                            credentials.privilege() + ":" +
+        String plainText =  credentials.userID() + ":" +
                             this.createdDate.getTime() + ":" +
                             this.expireDate.getTime() + ":" +
                             Env.PRIVATE_KEY;
@@ -96,17 +102,14 @@ public class Token {
      * @return true if the token is valid, otherwise false
      */
     public boolean isValid() {
-        String[] split = crypt.decode(this.value).split(":");
-        String key = split[split.length - 1];
-        return this.createdDate.before(this.expireDate) && key.equals(Env.PRIVATE_KEY);
-    }
-
-    /**
-     * Get the credential provided when the Token was created
-     * @return the privilege of the credentials
-     */
-    public String getPrivilege() {
-        return this.credentials.privilege();
+        try {
+            String[] split = crypt.decode(this.value).split(":");
+            String key = split[split.length - 1];
+            return this.createdDate.before(this.expireDate) && key.equals(Env.PRIVATE_KEY);
+        } catch (IllegalBlockSizeException | BadPaddingException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     /**

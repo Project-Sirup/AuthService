@@ -16,6 +16,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 @Deprecated
@@ -51,13 +52,12 @@ public class AuthController {
         response.type("application/json");
         AuthResponse authResponse;
         try {
-            Token token = Token.fromTokenString(authRequest.token);
-            boolean isAuth = auth.auth(token);
+            Optional<Token> optionalToken = Token.fromTokenString(authRequest.token);
+            boolean isAuth = optionalToken.isPresent() && auth.auth(optionalToken.get());
             int code = isAuth ? HttpStatus.OK_200 : HttpStatus.BAD_REQUEST_400;
             authResponse = new AuthResponse(code,
                     new HashMap<>(){{
                         put("valid",isAuth);
-                        put("privilege",token.getPrivilege());
                     }});
         }
         catch (IllegalArgumentException iae) {
@@ -65,7 +65,6 @@ public class AuthController {
                     HttpStatus.BAD_REQUEST_400,
                     new HashMap<>(){{
                         put("valid",false);
-                        put("privilege","");
                     }});
         }
         response.status(authResponse.status);

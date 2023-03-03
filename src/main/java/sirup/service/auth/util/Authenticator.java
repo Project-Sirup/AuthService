@@ -2,6 +2,8 @@ package sirup.service.auth.util;
 
 import sirup.service.auth.crypt.ICrypt;
 
+import java.util.Optional;
+
 public class Authenticator {
 
     private final Policy policy;
@@ -21,7 +23,8 @@ public class Authenticator {
     }
 
     public boolean auth(String tokenString) {
-        return auth(Token.fromTokenString(tokenString));
+        Optional<Token> optionalToken = Token.fromTokenString(tokenString);
+        return optionalToken.isPresent() && auth(optionalToken.get());
     }
 
     public Token getToken(Credentials credentials) {
