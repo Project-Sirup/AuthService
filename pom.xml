@@ -26,6 +26,14 @@
                     <target>17</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <mainClass>sirup.service.auth.Main</mainClass>
+                </configuration>
+            </plugin>
 
             <!-- compile proto file into java files. -->
             <!--<plugin>
@@ -68,7 +76,7 @@
         <dependency>
             <groupId>sirup.service.auth.rpc.proto</groupId>
             <artifactId>auth-rpc</artifactId>
-            <version>1.0.3</version>
+            <version>1.1.0</version>
         </dependency>
 
         <dependency>

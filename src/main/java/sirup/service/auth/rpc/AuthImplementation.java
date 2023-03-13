@@ -33,30 +33,30 @@ public class AuthImplementation extends SirupAuthGrpc.SirupAuthImplBase {
 
     @Override
     public void token(TokenRequest request, StreamObserver<TokenResponse> responseObserver) {
-        logger.info("getToken");
-        Credentials credentials = new Credentials(
-                request.getCredentials().getUserID());
+        String userId = request.getCredentials().getUserID();
+        Credentials credentials = new Credentials(userId);
         Token token = auth.getToken(credentials);
         TokenResponse tokenResponse = TokenResponse.newBuilder()
                 .setToken(token.toTokenString())
                 .build();
+        logger.info(userId + " -> getToken");
         responseObserver.onNext(tokenResponse);
         responseObserver.onCompleted();
     }
 
     @Override
     public void auth(AuthRequest request, StreamObserver<AuthResponse> responseObserver) {
-        logger.info("auth...");
+        String userId = request.getCredentialsRpc().getUserID();
         AuthResponse.Builder authResponseBuilder = AuthResponse.newBuilder();
         boolean isValid = false;
         try {
             Optional<Token> optionalToken = Token.fromTokenString(request.getToken());
-            isValid = optionalToken.isPresent() && auth.auth(optionalToken.get(), request.getCredentialsRpc().getUserID());
+            isValid = optionalToken.isPresent() && auth.auth(optionalToken.get(), userId);
         } catch (IllegalArgumentException iae) {
             iae.printStackTrace();
         }
         authResponseBuilder.setTokenValid(isValid);
-        logger.info("...success:[" + isValid + "]");
+        logger.info( userId + " -> auth -> " + isValid);
         responseObserver.onNext(authResponseBuilder.build());
         responseObserver.onCompleted();
     }
