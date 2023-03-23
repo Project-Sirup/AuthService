@@ -2,6 +2,7 @@ package sirup.service.auth.rpc;
 
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+import sirup.service.auth.util.Env;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -17,7 +18,7 @@ public class AuthServer {
     public void start() throws IOException {
         final Logger logger = Logger.getLogger(AuthServer.class.getName());
 
-        int port = 50051;
+        int port = Env.PORT;
         server = ServerBuilder.forPort(port).addService(new AuthImplementation()).build();
         server.start();
         logger.info("Server started, listening on " + port);
