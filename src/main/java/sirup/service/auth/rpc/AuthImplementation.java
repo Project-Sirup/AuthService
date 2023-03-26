@@ -8,17 +8,17 @@ import sirup.service.auth.util.Authenticator;
 import sirup.service.auth.util.Credentials;
 import sirup.service.auth.util.Token;
 import sirup.service.auth.rpc.proto.*;
+import sirup.service.log.rpc.client.LogClient;
 
 import javax.crypto.NoSuchPaddingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
-import java.util.logging.Logger;
 
 public class AuthImplementation extends SirupAuthGrpc.SirupAuthImplBase {
 
     private final Authenticator auth;
-    private final Logger logger = Logger.getLogger(AuthImplementation.class.getName());
+    private final LogClient logger = LogClient.getInstance();
 
     public AuthImplementation() {
         ICrypt crypt;
@@ -39,7 +39,7 @@ public class AuthImplementation extends SirupAuthGrpc.SirupAuthImplBase {
         TokenResponse tokenResponse = TokenResponse.newBuilder()
                 .setToken(token.toTokenString())
                 .build();
-        logger.info(userId + " -> getToken");
+        logger.log(userId + " -> getToken");
         responseObserver.onNext(tokenResponse);
         responseObserver.onCompleted();
     }
@@ -56,7 +56,7 @@ public class AuthImplementation extends SirupAuthGrpc.SirupAuthImplBase {
             iae.printStackTrace();
         }
         authResponseBuilder.setTokenValid(isValid);
-        logger.info( userId + " -> auth -> " + isValid);
+        logger.log( userId + " -> auth -> " + isValid);
         responseObserver.onNext(authResponseBuilder.build());
         responseObserver.onCompleted();
     }

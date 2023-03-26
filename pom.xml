@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.example</groupId>
+    <groupId>sirup.service.auth</groupId>
     <artifactId>AuthService</artifactId>
     <version>1.0-SNAPSHOT</version>
 
@@ -76,6 +76,11 @@
         <dependency>
             <groupId>sirup.service.auth.rpc.proto</groupId>
             <artifactId>auth-rpc</artifactId>
+            <version>1.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>sirup.service.log.rpc.proto</groupId>
+            <artifactId>log-rpc</artifactId>
             <version>1.1.0</version>
         </dependency>
 
