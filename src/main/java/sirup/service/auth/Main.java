@@ -10,7 +10,7 @@ import static spark.Spark.*;
 
 public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
-        LogClient.init("localhost", 2102);
+        LogClient.init("localhost", 2102, "AuthService");
         final AuthServer server = new AuthServer();
         server.start();
         server.blockUntilShutdown();

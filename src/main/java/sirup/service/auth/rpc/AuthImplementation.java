@@ -15,6 +15,8 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 
+import static sirup.service.log.rpc.client.ColorUtil.*;
+
 public class AuthImplementation extends SirupAuthGrpc.SirupAuthImplBase {
 
     private final Authenticator auth;
@@ -39,7 +41,7 @@ public class AuthImplementation extends SirupAuthGrpc.SirupAuthImplBase {
         TokenResponse tokenResponse = TokenResponse.newBuilder()
                 .setToken(token.toTokenString())
                 .build();
-        logger.log(userId + " -> getToken");
+        logger.info(id(userId) + " -> " + action("getToken"));
         responseObserver.onNext(tokenResponse);
         responseObserver.onCompleted();
     }
@@ -56,7 +58,7 @@ public class AuthImplementation extends SirupAuthGrpc.SirupAuthImplBase {
             iae.printStackTrace();
         }
         authResponseBuilder.setTokenValid(isValid);
-        logger.log( userId + " -> auth -> " + isValid);
+        logger.info(id(userId) + " -> " + action("auth") + " -> " + isValid);
         responseObserver.onNext(authResponseBuilder.build());
         responseObserver.onCompleted();
     }
