@@ -17,7 +17,7 @@ import java.util.Optional;
 
 import static sirup.service.log.rpc.client.ColorUtil.*;
 
-public class AuthImplementation extends SirupAuthGrpc.SirupAuthImplBase {
+public class AuthImplementation extends SirupAuthServiceGrpc.SirupAuthServiceImplBase {
 
     private final Authenticator auth;
     private final LogClient logger = LogClient.getInstance();
@@ -34,8 +34,15 @@ public class AuthImplementation extends SirupAuthGrpc.SirupAuthImplBase {
     }
 
     @Override
+    public void health(HealthRequest request, StreamObserver<HealthResponse> responseObserver) {
+        HealthResponse healthResponse = HealthResponse.newBuilder().setHealthCode(200).build();
+        responseObserver.onNext(healthResponse);
+        responseObserver.onCompleted();
+    }
+
+    @Override
     public void token(TokenRequest request, StreamObserver<TokenResponse> responseObserver) {
-        String userId = request.getCredentials().getUserID();
+        String userId = request.getCredentials().getUserId();
         Credentials credentials = new Credentials(userId);
         Token token = auth.getToken(credentials);
         TokenResponse tokenResponse = TokenResponse.newBuilder()
@@ -48,7 +55,7 @@ public class AuthImplementation extends SirupAuthGrpc.SirupAuthImplBase {
 
     @Override
     public void auth(AuthRequest request, StreamObserver<AuthResponse> responseObserver) {
-        String userId = request.getCredentialsRpc().getUserID();
+        String userId = request.getCredentialsRpc().getUserId();
         AuthResponse.Builder authResponseBuilder = AuthResponse.newBuilder();
         boolean isValid = false;
         try {
