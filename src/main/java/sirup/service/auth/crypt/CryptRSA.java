@@ -18,7 +18,7 @@ public class CryptRSA implements ICrypt {
 
     public CryptRSA() throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException {
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
-        generator.initialize(1024);
+        generator.initialize(2048);
         KeyPair pair = generator.generateKeyPair();
         this.publicKey = pair.getPublic();
         this.privateKey = pair.getPrivate();
@@ -34,16 +34,16 @@ public class CryptRSA implements ICrypt {
     public String encode(String plainText) {
         String encodedText;
         try {
-            encodedText = Base64.getEncoder().encodeToString(encryptCipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8)));
-        } catch (BadPaddingException | IllegalBlockSizeException bpe) {
+            encodedText = Base64.getEncoder().encodeToString(this.encryptCipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8)));
+        } catch (BadPaddingException | IllegalBlockSizeException e) {
             encodedText = "ERROR";
-            bpe.printStackTrace();
+            e.printStackTrace();
         }
         return encodedText;
     }
 
     @Override
     public String decode(String encryptedText) throws IllegalBlockSizeException, BadPaddingException {
-        return new String(decryptCipher.doFinal(Base64.getDecoder().decode(encryptedText.getBytes(StandardCharsets.UTF_8))));
+        return new String(this.decryptCipher.doFinal(Base64.getDecoder().decode(encryptedText.getBytes(StandardCharsets.UTF_8))));
     }
 }

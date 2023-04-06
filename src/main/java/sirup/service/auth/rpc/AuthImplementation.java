@@ -1,6 +1,7 @@
 package sirup.service.auth.rpc;
 
 import io.grpc.stub.StreamObserver;
+import sirup.service.auth.crypt.CryptAES;
 import sirup.service.auth.crypt.CryptB64;
 import sirup.service.auth.crypt.CryptRSA;
 import sirup.service.auth.crypt.ICrypt;
@@ -23,9 +24,9 @@ public class AuthImplementation extends SirupAuthServiceGrpc.SirupAuthServiceImp
     private final LogClient logger = LogClient.getInstance();
 
     public AuthImplementation() {
-        ICrypt crypt;
+        ICrypt crypt = new CryptB64();
         try {
-            crypt = new CryptRSA();
+            crypt = new CryptAES();
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException e) {
             crypt = new CryptB64();
             e.printStackTrace();
@@ -62,6 +63,7 @@ public class AuthImplementation extends SirupAuthServiceGrpc.SirupAuthServiceImp
         boolean isValid = false;
         try {
             Optional<Token> optionalToken = Token.fromTokenString(request.getToken());
+            System.out.println(request.getToken());
             Credentials credentials = new Credentials(userId, systemAccess);
             isValid = optionalToken.isPresent() && auth.auth(optionalToken.get(), credentials);
         } catch (IllegalArgumentException iae) {

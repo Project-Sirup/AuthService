@@ -19,10 +19,12 @@ public class Authenticator {
     }
 
     public boolean auth(Token token, Credentials credentials) {
+        System.out.println(token.toTokenString());
         return token.isValid(credentials);
     }
 
     public boolean auth(String tokenString, Credentials credentials) {
+        System.out.println(tokenString);
         Optional<Token> optionalToken = Token.fromTokenString(tokenString);
         return optionalToken.isPresent() && auth(optionalToken.get(), credentials);
     }
