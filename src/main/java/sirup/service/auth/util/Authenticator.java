@@ -18,13 +18,13 @@ public class Authenticator {
         Token.setCrypt(crypt);
     }
 
-    public boolean auth(Token token, String userID) {
-        return token.isValid(userID);
+    public boolean auth(Token token, Credentials credentials) {
+        return token.isValid(credentials);
     }
 
-    public boolean auth(String tokenString, String userID) {
+    public boolean auth(String tokenString, Credentials credentials) {
         Optional<Token> optionalToken = Token.fromTokenString(tokenString);
-        return optionalToken.isPresent() && auth(optionalToken.get(), userID);
+        return optionalToken.isPresent() && auth(optionalToken.get(), credentials);
     }
 
     public Token getToken(Credentials credentials) {

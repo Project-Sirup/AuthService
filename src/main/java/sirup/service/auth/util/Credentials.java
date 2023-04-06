@@ -1,4 +1,4 @@
 package sirup.service.auth.util;
 
-public record Credentials(String userID) {
+public record Credentials(String userID, int systemAccess) {
 }

@@ -2,6 +2,7 @@ package sirup.service.auth.util;
 
 import sirup.service.auth.crypt.CryptB64;
 import sirup.service.auth.crypt.ICrypt;
+import sirup.service.log.rpc.client.LogClient;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -12,17 +13,17 @@ import java.util.Optional;
 
 public class Token {
     private final String value;
-    private final Date createdDate;
     private final Date expireDate;
     private final Credentials credentials;
     private static ICrypt crypt = new CryptB64();
+
+    private static final LogClient logger = LogClient.getInstance();
 
     /**
      * Default Token with a duration of 1 day
      */
     public Token(final Credentials credentials) {
-        this.createdDate = new Date();
-        this.expireDate = new Date(this.createdDate.getTime() + Duration.DurationUnit.DAY.unit);
+        this.expireDate = new Date(System.currentTimeMillis() + Duration.DurationUnit.DAY.unit);
         this.value = genValue(credentials);
         this.credentials = credentials;
     }
@@ -32,8 +33,7 @@ public class Token {
      * @param duration token's valid duration
      */
     public Token(final Credentials credentials, final Duration duration) {
-        this.createdDate = new Date();
-        this.expireDate = new Date(this.createdDate.getTime() + (duration.duration() * duration.durationUnit().unit));
+        this.expireDate = new Date(System.currentTimeMillis() + (duration.duration() * duration.durationUnit().unit));
         this.value = genValue(credentials);
         this.credentials = credentials;
     }
@@ -41,12 +41,10 @@ public class Token {
     /**
      * Used for creating a Token from string
      * @param value the provided value in the string
-     * @param createdDate the provided creation date
      * @param expireDate the provided expiration date
      */
-    private Token(final String value, final Date createdDate, final Date expireDate, final Credentials credentials) {
+    private Token(final String value, final Date expireDate, final Credentials credentials) {
         this.value = value;
-        this.createdDate = createdDate;
         this.expireDate = expireDate;
         this.credentials = credentials;
     }
@@ -71,12 +69,11 @@ public class Token {
         try {
             String decodedTokenString = crypt.decode(tokenString);
             String[] strings = decodedTokenString.split(":");
-            Credentials credentials = new Credentials(strings[0]);
-            Date created = new Date(Long.parseLong(strings[strings.length - 3]));
+            Credentials credentials = new Credentials(strings[0], Integer.parseInt(strings[1]));
             Date expire = new Date(Long.parseLong(strings[strings.length - 2]));
-            return Optional.of(new Token(tokenString,created,expire,credentials));
-        } catch (IllegalBlockSizeException | BadPaddingException e) {
-            System.err.println(e.getMessage());
+            return Optional.of(new Token(tokenString,expire,credentials));
+        } catch (IllegalBlockSizeException | BadPaddingException | NumberFormatException e) {
+            logger.warn(e.getMessage());
         }
         return Optional.empty();
     }
@@ -91,7 +88,7 @@ public class Token {
 
     private String genValue(Credentials credentials) {
         String plainText =  credentials.userID() + ":" +
-                            this.createdDate.getTime() + ":" +
+                            credentials.systemAccess() + ":" +
                             this.expireDate.getTime() + ":" +
                             Env.PRIVATE_KEY;
         return crypt.encode(plainText);
@@ -101,11 +98,14 @@ public class Token {
      * Check if the given token is still valid
      * @return true if the token is valid, otherwise false
      */
-    public boolean isValid(String userID) {
+    public boolean isValid(Credentials credentials) {
         try {
             String[] split = crypt.decode(this.value).split(":");
             String key = split[split.length - 1];
-            return this.createdDate.before(this.expireDate) && key.equals(Env.PRIVATE_KEY) && this.credentials.userID().equals(userID);
+            return System.currentTimeMillis() < this.expireDate.getTime() &&
+                    key.equals(Env.PRIVATE_KEY) &&
+                    this.credentials.userID().equals(credentials.userID()) &&
+                    this.credentials.systemAccess() == credentials.systemAccess();
         } catch (IllegalBlockSizeException | BadPaddingException e) {
             e.printStackTrace();
         }
