@@ -5,6 +5,7 @@ import sirup.service.auth.crypt.CryptAES;
 import sirup.service.auth.crypt.CryptB64;
 import sirup.service.auth.crypt.CryptRSA;
 import sirup.service.auth.crypt.ICrypt;
+import sirup.service.auth.rpc.client.SystemAccess;
 import sirup.service.auth.util.Authenticator;
 import sirup.service.auth.util.Credentials;
 import sirup.service.auth.util.Token;
@@ -59,19 +60,55 @@ public class AuthImplementation extends SirupAuthServiceGrpc.SirupAuthServiceImp
     public void auth(AuthRequest request, StreamObserver<AuthResponse> responseObserver) {
         String userId = request.getCredentialsRpc().getUserId();
         int systemAccess = request.getCredentialsRpc().getSystemAccess();
+        String tokenString = request.getToken();
         AuthResponse.Builder authResponseBuilder = AuthResponse.newBuilder();
         boolean isValid = false;
         try {
-            Optional<Token> optionalToken = Token.fromTokenString(request.getToken());
-            System.out.println(request.getToken());
+            Optional<Token> optionalToken = Token.fromTokenString(tokenString);
             Credentials credentials = new Credentials(userId, systemAccess);
             isValid = optionalToken.isPresent() && auth.auth(optionalToken.get(), credentials);
         } catch (IllegalArgumentException iae) {
             iae.printStackTrace();
         }
         authResponseBuilder.setTokenValid(isValid);
-        logger.info(id(userId) + " -> " + action("auth") + " -> " + isValid);
+        logger.info(id(userId), action("auth"), "["+isValid+"]");
         responseObserver.onNext(authResponseBuilder.build());
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void serviceToken(ServiceTokenRequest request, StreamObserver<ServiceTokenResponse> responseObserver) {
+        //Auth admin
+        String adminId = request.getAdminCredentials().getUserId();
+        int systemAccess = request.getAdminCredentials().getSystemAccess();
+        String adminTokenString = request.getAdminToken();
+        ServiceTokenResponse.Builder serviceResponseBuilder = ServiceTokenResponse.newBuilder();
+        boolean isValid = false;
+        try {
+            Optional<Token> optionalToken = Token.fromTokenString(adminTokenString);
+            Credentials adminCredentials = new Credentials(adminId, systemAccess);
+            isValid = systemAccess == SystemAccess.ADMIN.id && optionalToken.isPresent() && auth.auth(optionalToken.get(), adminCredentials);
+        } catch (IllegalArgumentException iae) {
+            iae.printStackTrace();
+        }
+        logger.info(id(adminId), action("serviceToken"), "["+isValid+"]");
+        if (!isValid) {
+            serviceResponseBuilder.setError(ErrorRpc.newBuilder()
+                    .setStatus(498)
+                    .setErrorMessage("User is not an admin")
+                    .build());
+            responseObserver.onNext(serviceResponseBuilder.build());
+            responseObserver.onCompleted();
+            return;
+        }
+        //Gen new ServiceToken
+        String serviceId = request.getServiceCredentials().getUserId();
+        Credentials serviceCredentials = new Credentials(serviceId,SystemAccess.SERVICE.id);
+        Token token = auth.getToken(serviceCredentials);
+        serviceResponseBuilder
+                .setToken(token.toTokenString());
+        logger.info(id(serviceId) + " -> " + action("getServiceToken"));
+        responseObserver.onNext(serviceResponseBuilder.build());
         responseObserver.onCompleted();
     }
 }
