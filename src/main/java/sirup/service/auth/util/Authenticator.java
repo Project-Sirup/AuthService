@@ -29,6 +29,10 @@ public class Authenticator {
         return optionalToken.isPresent() && auth(optionalToken.get(), credentials);
     }
 
+    public Token getServiceToken(Credentials serviceCredentials) {
+        return new Token(serviceCredentials, Duration.MAX);
+    }
+
     public Token getToken(Credentials credentials) {
         switch (policy) {
             case SHORT -> {

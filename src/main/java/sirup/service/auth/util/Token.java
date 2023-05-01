@@ -33,7 +33,12 @@ public class Token {
      * @param duration token's valid duration
      */
     public Token(final Credentials credentials, final Duration duration) {
-        this.expireDate = new Date(System.currentTimeMillis() + (duration.duration() * duration.durationUnit().unit));
+        if (duration.durationUnit().equals(Duration.DurationUnit.MAX)) {
+            this.expireDate = new Date(Long.MAX_VALUE);
+        }
+        else {
+            this.expireDate = new Date(System.currentTimeMillis() + (duration.duration() * duration.durationUnit().unit));
+        }
         this.value = genValue(credentials);
         this.credentials = credentials;
     }

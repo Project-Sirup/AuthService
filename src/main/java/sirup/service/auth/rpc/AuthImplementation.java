@@ -104,7 +104,7 @@ public class AuthImplementation extends SirupAuthServiceGrpc.SirupAuthServiceImp
         //Gen new ServiceToken
         String serviceId = request.getServiceCredentials().getUserId();
         Credentials serviceCredentials = new Credentials(serviceId,SystemAccess.SERVICE.id);
-        Token token = auth.getToken(serviceCredentials);
+        Token token = auth.getServiceToken(serviceCredentials);
         serviceResponseBuilder
                 .setToken(token.toTokenString());
         logger.info(id(serviceId) + " -> " + action("getServiceToken"));
