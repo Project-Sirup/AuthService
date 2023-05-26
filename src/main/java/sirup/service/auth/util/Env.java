@@ -1,14 +1,11 @@
 package sirup.service.auth.util;
 
-import io.github.cdimascio.dotenv.Dotenv;
-
 public class Env {
+    public static final int AUTH_PORT;
     public static final String PRIVATE_KEY;
     public static final String DUMMY_KEY = "Dumdum";
-    public static final int PORT;
     static {
-        Dotenv dotenv = Dotenv.load();
-        PRIVATE_KEY = dotenv.get("PRIVATE_KEY");
-        PORT = Integer.parseInt(dotenv.get("PORT"));
+        AUTH_PORT = Integer.parseInt(System.getenv("AUTH_PORT"));
+        PRIVATE_KEY = System.getenv("PRIVATE_KEY");
     }
 }

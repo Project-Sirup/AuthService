@@ -18,7 +18,7 @@ public class AuthServer {
     public void start() throws IOException {
         final LogClient logger = LogClient.getInstance();
 
-        int port = Env.PORT;
+        int port = Env.AUTH_PORT;
         server = ServerBuilder.forPort(port).addService(new AuthImplementation()).build();
         server.start();
         logger.info("Server started, listening on " + port);
